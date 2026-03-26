@@ -1,15 +1,19 @@
-task: "sentiment analysis of reviews"
+task: "классификация отзывов на книги"
 
 sources:
   - type: hf_dataset
-    name: imdb
+    name: amazon_polarity
     split: train
-    sample: 2000
+    sample: 1500
     label_map:
       0: "negative"
       1: "positive"
 
-  - type: scrape
-    url: "http://books.toscrape.com"
-    selector: "article.product_pod"
-    pages: 5
+  - type: hf_dataset
+    name: sst2
+    split: train
+    sample: 500
+    text_col: sentence
+    label_map:
+      0: "negative"
+      1: "positive"

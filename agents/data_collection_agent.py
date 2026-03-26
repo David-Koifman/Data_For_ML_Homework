@@ -24,7 +24,7 @@ class DataCollectionAgent:
 
     # ── skill: load_dataset ──────────────────────────────────────────────────
     def load_dataset(self, name: str, source: str = "hf", split: str = "train",
-                     sample: int = None, label_map: dict = None) -> pd.DataFrame:
+                     sample: int = None, label_map: dict = None, text_col: str = None) -> pd.DataFrame:
         if source == "hf":
             from datasets import load_dataset as hf_load
             print(f"  [load_dataset] Загружаю {name} с HuggingFace...")
@@ -32,6 +32,15 @@ class DataCollectionAgent:
             df = ds.to_pandas()
             if sample:
                 df = df.sample(n=min(sample, len(df)), random_state=42)
+            # Находим колонку с текстом: явно заданная → или автопоиск
+            TEXT_CANDIDATES = ["text", "sentence", "review", "content", "comment", "body"]
+            if text_col and text_col in df.columns:
+                df = df.rename(columns={text_col: "text"})
+            elif "text" not in df.columns:
+                for candidate in TEXT_CANDIDATES:
+                    if candidate in df.columns:
+                        df = df.rename(columns={candidate: "text"})
+                        break
             # Применяем маппинг меток из config.yaml (если задан)
             if label_map and "label" in df.columns:
                 # config.yaml хранит ключи как int или str — нормализуем
@@ -137,7 +146,8 @@ class DataCollectionAgent:
                     source="hf",
                     split=src.get("split", "train"),
                     sample=src.get("sample"),
-                    label_map=src.get("label_map")
+                    label_map=src.get("label_map"),
+                    text_col=src.get("text_col")
                 )
             elif src_type == "scrape":
                 df = self.scrape(

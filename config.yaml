@@ -1,8 +1,8 @@
-task: "классификация отзывов на рестораны"
+task: "классификация отзывов на книги"
 
 sources:
   - type: hf_dataset
-    name: yelp_polarity
+    name: amazon_polarity
     split: train
     sample: 1500
     label_map:
@@ -10,9 +10,10 @@ sources:
       1: "positive"
 
   - type: hf_dataset
-    name: rotten_tomatoes
+    name: sst2
     split: train
     sample: 500
+    text_col: sentence
     label_map:
       0: "negative"
       1: "positive"
