@@ -23,7 +23,8 @@ class DataCollectionAgent:
         self.task = self.config.get("task", "")
 
     # ── skill: load_dataset ──────────────────────────────────────────────────
-    def load_dataset(self, name: str, source: str = "hf", split: str = "train", sample: int = None) -> pd.DataFrame:
+    def load_dataset(self, name: str, source: str = "hf", split: str = "train",
+                     sample: int = None, label_map: dict = None) -> pd.DataFrame:
         if source == "hf":
             from datasets import load_dataset as hf_load
             print(f"  [load_dataset] Загружаю {name} с HuggingFace...")
@@ -31,10 +32,20 @@ class DataCollectionAgent:
             df = ds.to_pandas()
             if sample:
                 df = df.sample(n=min(sample, len(df)), random_state=42)
-            df = df.rename(columns={"text": "text", "label": "label"})
-            df["label"] = df["label"].map({0: "negative", 1: "positive"})
+            # Применяем маппинг меток из config.yaml (если задан)
+            if label_map and "label" in df.columns:
+                # config.yaml хранит ключи как int или str — нормализуем
+                normalized_map = {}
+                for k, v in label_map.items():
+                    normalized_map[int(k)] = v
+                    normalized_map[str(k)] = v
+                df["label"] = df["label"].map(normalized_map)
+            elif "label" in df.columns and df["label"].dtype in ["int64", "int32"]:
+                # fallback: числовые метки → строки как есть
+                df["label"] = df["label"].astype(str)
             df["source"] = f"hf:{name}"
             df["collected_at"] = datetime.now().isoformat()
+            df = df.dropna(subset=["label"])
             print(f"  [load_dataset] Загружено {len(df)} записей")
             return df[["text", "label", "source", "collected_at"]]
         else:
@@ -125,7 +136,8 @@ class DataCollectionAgent:
                     name=src["name"],
                     source="hf",
                     split=src.get("split", "train"),
-                    sample=src.get("sample")
+                    sample=src.get("sample"),
+                    label_map=src.get("label_map")
                 )
             elif src_type == "scrape":
                 df = self.scrape(

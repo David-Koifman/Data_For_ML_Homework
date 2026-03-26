@@ -5,6 +5,9 @@ sources:
     name: imdb
     split: train
     sample: 2000
+    label_map:
+      0: "negative"
+      1: "positive"
 
   - type: scrape
     url: "http://books.toscrape.com"
