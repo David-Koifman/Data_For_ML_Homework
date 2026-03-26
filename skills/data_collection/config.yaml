@@ -1,0 +1,12 @@
+task: "sentiment analysis of reviews"
+
+sources:
+  - type: hf_dataset
+    name: imdb
+    split: train
+    sample: 2000
+
+  - type: scrape
+    url: "http://books.toscrape.com"
+    selector: "article.product_pod"
+    pages: 5
