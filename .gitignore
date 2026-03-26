@@ -9,3 +9,4 @@ models/*.pkl
 data/raw/*.parquet
 data/raw/*.csv
 data/labeled/*.parquet
+.claude/settings.local.json

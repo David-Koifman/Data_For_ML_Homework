@@ -1,15 +1,18 @@
-task: "sentiment analysis of reviews"
+task: "классификация отзывов на рестораны"
 
 sources:
   - type: hf_dataset
-    name: imdb
+    name: yelp_polarity
     split: train
-    sample: 2000
+    sample: 1500
     label_map:
       0: "negative"
       1: "positive"
 
-  - type: scrape
-    url: "http://books.toscrape.com"
-    selector: "article.product_pod"
-    pages: 5
+  - type: hf_dataset
+    name: rotten_tomatoes
+    split: train
+    sample: 500
+    label_map:
+      0: "negative"
+      1: "positive"
