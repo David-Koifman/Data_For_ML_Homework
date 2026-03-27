@@ -1,0 +1,72 @@
+=== ФИНАЛЬНЫЙ ДАТАСЕТ ===
+
+Размер: 200 записей, 6 колонок
+Колонки: ['text', 'label', 'source', 'collected_at', 'auto_label', 'confidence']
+
+=== РАСПРЕДЕЛЕНИЕ МЕТОК ===
+auto_label
+positive    107
+negative     93
+
+=== СТАТИСТИКА УВЕРЕННОСТИ ===
+Средняя: 0.836
+Мин: 0.550
+Макс: 0.980
+Флагов (<0.7): 19
+
+=== ИСТОЧНИКИ ===
+source
+hf:yelp_polarity      157
+hf:rotten_tomatoes     43
+
+=== ПЕРВЫЕ 10 ЗАПИСЕЙ ===
+
+[1] hf:yelp_polarity
+Текст: At breakfast John's has some of the best home fries in town. Their country ham is also nice and salty like it should be add good biscuits with eggs how you like them and you have a great breakfast; pl...
+Оригинал: positive | Auto: positive | Уверенность: 0.95
+--------------------------------------------------------------------------------
+
+[2] hf:yelp_polarity
+Текст: A nice hot drink after a quiet, snowy walk in schenley park= a lovely afternoon.  I look forward to coming here more in spring and summer after morning runs.  Friendly staff, super cozy atmosphere- lo...
+Оригинал: positive | Auto: positive | Уверенность: 0.95
+--------------------------------------------------------------------------------
+
+[3] hf:yelp_polarity
+Текст: Easily one of the best pizza places in the valley.\nSuper thin, crispy crust with their famous sweet sauce...fantastic.\nI started going here 7-8 years ago and have been a regular since.  The only bad...
+Оригинал: positive | Auto: positive | Уверенность: 0.90
+--------------------------------------------------------------------------------
+
+[4] hf:yelp_polarity
+Текст: 11/26/13 I had a great hero sub tonight. It was made by Jarvis. I tried some tahitian garlic hot sauce as well. Both were vwry tasry....
+Оригинал: positive | Auto: positive | Уверенность: 0.85
+--------------------------------------------------------------------------------
+
+[5] hf:yelp_polarity
+Текст: I went here to get my ring reshaped (it got ran over by a car).\n\nThey did a quick reshape to the best of his ability allowing it to be \""free\"". I paid the actually amount to get it shaped better ...
+Оригинал: positive | Auto: positive | Уверенность: 0.88
+--------------------------------------------------------------------------------
+
+[6] hf:yelp_polarity
+Текст: Food is great here! Quality of food is amazing fresh and you can taste the greatness I am a big MGM property follower and this is definitely one of there best buffets. The only downfall is that it's n...
+Оригинал: positive | Auto: positive | Уверенность: 0.90
+--------------------------------------------------------------------------------
+
+[7] hf:yelp_polarity
+Текст: i love this gym,after remodeling the gym 2 months ago everything is flawless. ill be coming to this gym for a while!...
+Оригинал: positive | Auto: positive | Уверенность: 0.95
+--------------------------------------------------------------------------------
+
+[8] hf:rotten_tomatoes
+Текст: the pianist is the film roman polanski may have been born to make ....
+Оригинал: positive | Auto: positive | Уверенность: 0.80
+--------------------------------------------------------------------------------
+
+[9] hf:yelp_polarity
+Текст: The food here is just average. I expected more and was pretty disappointed with the quality of the food. It was also very dark, loud, and the service was really slow....
+Оригинал: negative | Auto: negative | Уверенность: 0.92
+--------------------------------------------------------------------------------
+
+[10] hf:yelp_polarity
+Текст: They have one of my favorite phos in the city - i especially like the use of grilled chicken thigh.\n\nUnfortunately, last night I saw cockroaches on the floor and lost my appetite. I will never retur...
+Оригинал: negative | Auto: negative | Уверенность: 0.90
+--------------------------------------------------------------------------------
