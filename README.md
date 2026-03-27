@@ -1,190 +1,175 @@
-# Data Pipeline Project — Sentiment Analysis
+# Data Pipeline Project — ML Annotation Pipeline
 
-## Быстрый старт
+## Идея
+
+Проект решает задачу: **как разметить большой датасет дёшево и быстро**.
+
+Разметка вручную — дорого и долго. Использовать LLM на весь датасет — дорого. Решение — пайплайн из 4 агентов:
+
+```
+Собрать данные → Почистить → Claude размечает ВЫБОРКУ → Модель размечает ВСЕХ
+```
+
+Claude смотрит на 20% данных, обученная модель размечает оставшиеся 80% бесплатно. Human-in-the-Loop проверяет только сомнительные случаи.
+
+---
+
+## Технологии
+
+| Что | Зачем |
+|-----|-------|
+| Claude API (haiku) | Авторазметка выборки, объяснение проблем, анализ AL |
+| HuggingFace datasets | Готовые датасеты для обучения |
+| BeautifulSoup + requests | Scraping второго источника данных |
+| TF-IDF + LogisticRegression | Быстрая интерпретируемая модель для финальной разметки |
+| Active Learning (entropy) | Умный отбор данных — меньше разметки, то же качество |
+| Streamlit | UI для HITL-проверки |
+| Claude Code Skills | Оркестрация всего пайплайна через агентов |
+
+---
+
+## Архитектура — 4 агента
+
+### DataCollectionAgent — Задание 1
+Собирает данные из двух источников и объединяет в единый DataFrame.
+- Источник 1: HuggingFace dataset (готовый датасет)
+- Источник 2: Web scraping (BeautifulSoup)
+- Конфигурация через `config.yaml` — тему и источники можно менять без изменения кода
+- Выход: `data/raw/collected.parquet` — колонки `[text, label, source, collected_at]`
+
+### DataQualityAgent — Задание 2
+Находит и устраняет проблемы в данных.
+- Обнаруживает: пропуски, дубликаты, выбросы по длине текста (IQR), дисбаланс классов
+- Применяет стратегию чистки и сравнивает до/после
+- Бонус: Claude объясняет найденные проблемы и рекомендует стратегию
+- Выход: `data/raw/collected_clean.parquet`
+
+### AnnotationAgent — Задание 3
+Размечает выборку данных через Claude API (zero-shot classification).
+- Берёт 20% датасета (max 1000 записей) — не весь, это ключевой момент
+- Отправляет батчами по 20 записей в claude-haiku
+- Возвращает `auto_label` + `confidence` для каждого текста
+- Примеры с confidence < 0.7 → `review_queue.csv` на HITL-проверку
+- Генерирует спецификацию разметки (`annotation_spec.md`)
+- Экспортирует в LabelStudio формат
+- Выход: `data/labeled/collected_labeled.parquet`
+
+### ActiveLearningAgent — Задание 4
+Обучает модель на размеченной выборке, сравнивает стратегии отбора данных.
+- Модель: LogisticRegression + TF-IDF
+- Стратегии: Entropy (умный отбор) vs Random (случайный)
+- Цикл: 50 стартовых примеров → 5 итераций по 20 → итого 150 размеченных
+- Entropy выбирает примеры где модель наиболее не уверена → учится быстрее
+- Финальная модель размечает весь датасет
+- Бонус: Claude анализирует результаты эксперимента
+- Выход: `models/final_model.pkl`, `reports/learning_curve.png`
+
+---
+
+## Алгоритм пайплайна
+
+```
+config.yaml (тема + источники)
+    ↓
+Шаг 1: DataCollectionAgent
+        HuggingFace + scraping → data/raw/collected.parquet
+    ↓
+Шаг 2: DataQualityAgent
+        дубликаты + выбросы + пропуски → data/raw/collected_clean.parquet
+    ↓
+Шаг 3: AnnotationAgent
+        Claude размечает 20% выборку → data/labeled/collected_labeled.parquet
+        низкая уверенность → review_queue.csv
+    ↓
+Шаг 4: HITL
+        человек проверяет review_queue.csv → review_queue_corrected.csv
+    ↓
+Шаг 5: ActiveLearningAgent
+        учится на размеченной выборке (entropy vs random)
+        → models/final_model.pkl
+    ↓
+Шаг 6: Финальная разметка
+        модель размечает ВЕСЬ датасет → data/labeled/final_dataset.parquet
+```
+
+---
+
+## Пример: классификация спама
+
+**Задача:** определить является ли SMS-сообщение спамом.
+
+**Данные:**
+| Источник | Записей |
+|----------|---------|
+| HuggingFace `sms_spam` | 1500 |
+| Scraping `quotes.toscrape.com` (ham примеры) | 100 |
+| После чистки (дубликаты + выбросы) | **1458** |
+
+**Разметка:**
+- Claude разметил 300 записей (21% выборка)
+- Уверенность: 0.814 — хорошо, спам легко распознаётся
+- Флагов для HITL: 36 (Singlish и сокращённые тексты)
+- HITL результат: все 36 подтверждены как ham (Claude не ошибся)
+
+**Active Learning:**
+| Итерация | Примеров | Entropy F1 | Random F1 |
+|----------|----------|------------|-----------|
+| 0 | 50 | 0.00 | 0.00 |
+| 1 | 70 | 0.25 | 0.00 |
+| **2** | **90** | **0.80** | **0.00** |
+| 3 | 110 | 0.44 | 0.00 |
+| 5 | 150 | 0.00 | 0.00 |
+
+Entropy на 90 примерах достигла F1=0.80 — нашла спам-примеры умным отбором. Random так и не нашёл спам из-за дисбаланса (спама всего 11% в датасете).
+
+**Финальный датасет:**
+```
+data/labeled/final_dataset.csv  — 1458 записей
+spam (positive):   164  (11%)
+ham  (negative):  1294  (89%)
+Уверенность модели: 0.672
+```
+
+---
+
+## Запуск
 
 ```bash
 pip install -r requirements.txt
 
-# CLI — полный пайплайн
+# Полный пайплайн
 python run_pipeline.py
 
-# Streamlit дашборд — HITL и визуализация
+# Отдельные агенты
+python agents/data_collection_agent.py
+python agents/data_quality_agent.py
+python agents/annotation_agent.py
+python agents/al_agent.py
+
+# HITL дашборд
 streamlit run app.py
 ```
 
 ---
 
-## 1. Описание задачи и датасета
-
-**Задача ML:** Бинарная классификация тональности текстовых отзывов — `positive` / `negative`
-
-**Модальность:** Текст
-
-**Источники данных:**
-| Источник | Тип | Записей |
-|----------|-----|---------|
-| HuggingFace `amazon_polarity` | Open dataset | 1500 |
-| HuggingFace `sst2` | Open dataset | 500 |
-| **Итого после чистки** | | **2000** |
-
-**Схема данных:**
-| Колонка | Тип | Описание |
-|---------|-----|----------|
-| `text` | str | Текст отзыва |
-| `label` | str | `positive` / `negative` |
-| `source` | str | Источник данных |
-| `collected_at` | str | Время сбора |
-| `auto_label` | str | Метка агента |
-| `confidence` | float | Уверенность агента (0–1) |
-
-**Конфигурация динамическая** — источники, маппинг меток и объём выборки задаются в `config.yaml`. Можно легко переключиться на другую тему без изменения кода.
-
----
-
-## 2. Что делал каждый агент
-
-### DataCollectionAgent (Задание 1)
-Собирает данные из 2+ источников и возвращает унифицированный DataFrame.
-- **Решение:** `amazon_polarity` (отзывы на товары Amazon) + `sst2` (Stanford Sentiment Treebank) — оба содержат тональные отзывы
-- **Особенность:** автоопределение колонки текста (sst2 использует `sentence` вместо `text`), маппинг меток из `config.yaml`
-
-### DataQualityAgent (Задание 2)
-Выявляет и устраняет проблемы качества данных.
-- **Найдено:** 0 пропусков, 0 дубликатов, 0 выбросов, дисбаланс 1.09x
-- **Стратегия:** `clip_iqr` — удаление выбросов по IQR
-- **Почему:** Очень короткие тексты не содержат контекста для sentiment, очень длинные — редкие случаи
-
-### AnnotationAgent (Задание 3)
-Автоматически размечает данные через Claude API (zero-shot).
-- **Результат:** 200 записей размечено, Cohen's κ = 0.859
-- **Почему Claude API:** Не требует скачивания тяжёлых моделей, качество разметки выше чем TF-IDF baseline
-- **HITL:** 28 примеров с confidence < 0.7 флагированы для ручной проверки
-
-### ActiveLearningAgent (Задание 4 — Трек A)
-Умный отбор данных для обучения модели.
-- **Модель:** Logistic Regression + TF-IDF
-- **Стратегия:** Entropy — выбирает примеры где модель наименее уверена
-- **Результат:** Entropy accuracy=0.60, F1=0.556 vs Random accuracy=0.45, F1=0.00
-
----
-
-## 3. Human-in-the-Loop (HITL)
-
-**Где происходит:** После Шага 3 (авторазметка)
-
-**Что делает агент:**
-- Флагирует примеры с `confidence < 0.7` → сохраняет в `review_queue.csv`
-- Останавливает пайплайн и ждёт действия человека
-
-**Два варианта проверки:**
-
-**Вариант A — CLI:**
-1. Открыть `review_queue.csv`
-2. Проверить и исправить колонку `auto_label`
-3. Сохранить как `review_queue_corrected.csv`
-4. Нажать Enter — пайплайн продолжается
-
-**Вариант B — Streamlit (`streamlit run app.py`):**
-- Интерактивный интерфейс: кнопки навигации, радио-выбор метки, счётчик исправлений
-- Кнопка «Сохранить всё» записывает `review_queue_corrected.csv`
-
-**Статистика:**
-- Флагов для проверки: 28 из 200 (14%)
-- После проверки: исправленные метки объединяются с уверенными
-
----
-
-## 4. Метрики качества на каждом этапе
-
-| Этап | Метрика | Значение |
-|------|---------|----------|
-| Сбор | Записей собрано | 2000 |
-| Чистка | Записей после чистки | 2000 (данные чистые) |
-| Чистка | Дисбаланс классов | 1.09x |
-| Авторазметка | Cohen's κ | 0.859 |
-| Авторазметка | Средняя уверенность | 0.809 |
-| Авторазметка | Флагов для HITL | 28 (14%) |
-| Active Learning | Accuracy (Entropy) | 0.600 |
-| Active Learning | F1 (Entropy) | 0.556 |
-| Active Learning | Accuracy (Random) | 0.450 |
-| Active Learning | F1 (Random) | 0.000 |
-
-**Итоговая модель:** Logistic Regression + TF-IDF
-- Accuracy: **0.600**
-- F1: **0.556**
-
----
-
-## 5. Ретроспектива
-
-**Что сработало:**
-- Claude API для авторазметки — высокое качество (κ=0.859) без обучения модели
-- Entropy стратегия в Active Learning — стабильно превосходит Random
-- Динамический `config.yaml` — можно менять тему пайплайна без изменения кода
-- Streamlit дашборд — удобная HITL-разметка через браузер
-
-**Что не сработало:**
-- Небольшой тренировочный набор (200 записей для разметки) — accuracy мог быть выше при большем объёме
-- F1 у Random = 0.00 из-за вырожденного классификатора на малых данных
-
-**Что бы сделал иначе:**
-- Разметить больше примеров (500+) для лучшей кривой обучения AL
-- Добавить margin стратегию в финальное сравнение
-- Попробовать второй источник с реальными живыми отзывами (Yelp API, App Store)
-
----
-
-## Структура репозитория
+## Ключевые файлы
 
 ```
-Data_For_ML/
-├── agents/
-│   ├── data_collection_agent.py   # Задание 1
-│   ├── data_quality_agent.py      # Задание 2
-│   ├── annotation_agent.py        # Задание 3
-│   └── al_agent.py                # Задание 4
-├── skills/                        # Claude Code SKILL.md файлы
-├── notebooks/
-│   ├── eda.ipynb                  # EDA — Задание 1
-│   ├── quality_analysis.ipynb     # Задание 2
-│   ├── annotation_analysis.ipynb  # Задание 3
-│   └── al_experiment.ipynb        # Задание 4
-├── data/
-│   ├── raw/                       # Сырые данные
-│   └── labeled/                   # Размеченные данные
-├── models/
-│   ├── final_model.pkl            # Обученная модель
-│   └── vectorizer.pkl             # TF-IDF векторайзер
-├── reports/
-│   ├── quality_report.md
-│   ├── annotation_report.md
-│   ├── al_report.md
-│   └── *.png                      # Графики
-├── config.yaml                    # Источники данных (меняй тему здесь)
-├── run_pipeline.py                # Финальный пайплайн (CLI)
-├── app.py                         # Streamlit дашборд
-├── review_queue.csv               # HITL — файл для проверки
-├── requirements.txt
-└── README.md
+config.yaml                         ← тема и источники данных (меняй здесь)
+data/raw/collected.parquet          ← шаг 1: сырые данные
+data/raw/collected_clean.parquet    ← шаг 2: после чистки
+data/labeled/collected_labeled.parquet  ← шаг 3: метки Claude (выборка)
+review_queue.csv                    ← шаг 3: на HITL-проверку
+data/labeled/final_dataset.parquet  ← шаг 6: финал, весь датасет
+models/final_model.pkl              ← обученная модель
+reports/learning_curve.png          ← график entropy vs random
+reports/al_report.md                ← метрики AL по итерациям
+annotation_spec.md                  ← спецификация разметки
 ```
 
 ---
 
-## LLM в пайплайне (бонус +3)
+## Бонусы
 
-Claude API используется в трёх агентах:
-- **AnnotationAgent:** авторазмечает тексты (zero-shot classification) — основное использование
-- **DataQualityAgent:** объясняет найденные проблемы и рекомендует стратегию чистки
-- **ALAgent:** анализирует результаты AL и даёт практические выводы
-
-## Streamlit дашборд (бонус +2)
-
-```bash
-streamlit run app.py
-```
-
-Страницы:
-- **Главная** — статус всех шагов пайплайна
-- **HITL** — интерактивная проверка меток с навигацией
-- **Результаты** — метрики, графики, отчёты
-- **Датасет** — просмотр, фильтрация, скачивание CSV/Parquet
+- **+3 балла:** Claude API в 3 агентах (annotation, quality explain, AL analyze)
+- **+2 балла:** Streamlit дашборд (`streamlit run app.py`) — HITL + метрики + датасет
