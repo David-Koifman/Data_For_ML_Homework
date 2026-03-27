@@ -1,19 +1,19 @@
-task: "классификация отзывов на книги"
+task: "классификация новостных заголовков (tech vs non-tech)"
 
 sources:
   - type: hf_dataset
-    name: amazon_polarity
+    name: ag_news
     split: train
     sample: 1500
     label_map:
-      0: "negative"
-      1: "positive"
+      0: "negative"   # World
+      1: "negative"   # Sports
+      2: "negative"   # Business
+      3: "positive"   # Sci/Tech
 
-  - type: hf_dataset
-    name: sst2
-    split: train
-    sample: 500
-    text_col: sentence
-    label_map:
-      0: "negative"
-      1: "positive"
+  - type: scrape
+    url: "https://news.ycombinator.com"
+    selector: ".athing"
+    text_selector: ".titleline > a"
+    fixed_label: "positive"
+    pages: 3

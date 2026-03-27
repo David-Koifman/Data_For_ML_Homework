@@ -120,7 +120,8 @@ elif page == "✏️ HITL — Проверка меток":
 
     # Прогресс
     st.markdown("---")
-    changed = (corrected["corrected_label"] != corrected.get("auto_label", corrected.get("label", ""))).sum()
+    ref_col = "auto_label" if "auto_label" in corrected.columns else "label"
+    changed = (corrected["corrected_label"] != corrected[ref_col]).sum()
     st.progress((idx + 1) / len(df))
     st.caption(f"Просмотрено: {idx + 1}/{len(df)} | Исправлено: {changed}")
 

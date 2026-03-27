@@ -24,11 +24,13 @@ class DataCollectionAgent:
 
     # ── skill: load_dataset ──────────────────────────────────────────────────
     def load_dataset(self, name: str, source: str = "hf", split: str = "train",
-                     sample: int = None, label_map: dict = None, text_col: str = None) -> pd.DataFrame:
+                     sample: int = None, label_map: dict = None, text_col: str = None,
+                     config_name: str = None) -> pd.DataFrame:
         if source == "hf":
             from datasets import load_dataset as hf_load
-            print(f"  [load_dataset] Загружаю {name} с HuggingFace...")
-            ds = hf_load(name, split=split)
+            label = f"{name}/{config_name}" if config_name else name
+            print(f"  [load_dataset] Загружаю {label} с HuggingFace...")
+            ds = hf_load(name, config_name, split=split) if config_name else hf_load(name, split=split)
             df = ds.to_pandas()
             if sample:
                 df = df.sample(n=min(sample, len(df)), random_state=42)
@@ -61,7 +63,13 @@ class DataCollectionAgent:
             raise ValueError(f"Источник '{source}' не поддерживается. Используй 'hf'.")
 
     # ── skill: scrape ────────────────────────────────────────────────────────
-    def scrape(self, url: str, selector: str, pages: int = 1) -> pd.DataFrame:
+    def scrape(self, url: str, selector: str, pages: int = 1,
+               text_selector: str = None, fixed_label: str = None) -> pd.DataFrame:
+        """
+        Универсальный скрапер.
+        - text_selector: CSS-селектор текста внутри каждого item (если None — books.toscrape режим)
+        - fixed_label: фиксированная метка для всех записей (если None — books.toscrape режим)
+        """
         print(f"  [scrape] Скрапинг {url} ({pages} страниц)...")
         records = []
         current_url = url
@@ -73,25 +81,38 @@ class DataCollectionAgent:
                 items = soup.select(selector)
 
                 for item in items:
-                    title_tag = item.select_one("h3 a")
-                    rating_tag = item.select_one("p.star-rating")
-                    if not title_tag or not rating_tag:
-                        continue
-                    title = title_tag.get("title", title_tag.text.strip())
-                    rating_word = rating_tag.get("class", ["", ""])[1]
-                    label = STAR_MAP.get(rating_word)
-                    if label is None:
+                    if text_selector:
+                        # Универсальный режим: text_selector + fixed_label
+                        text_tag = item.select_one(text_selector)
+                        if not text_tag:
+                            continue
+                        text = text_tag.get_text(strip=True)
+                        label = fixed_label or "positive"
+                    else:
+                        # books.toscrape режим (обратная совместимость)
+                        title_tag = item.select_one("h3 a")
+                        rating_tag = item.select_one("p.star-rating")
+                        if not title_tag or not rating_tag:
+                            continue
+                        text = title_tag.get("title", title_tag.text.strip())
+                        rating_word = rating_tag.get("class", ["", ""])[1]
+                        lbl = STAR_MAP.get(rating_word)
+                        if lbl is None:
+                            continue
+                        label = "positive" if lbl == 1 else "negative"
+
+                    if not text:
                         continue
                     records.append({
-                        "text": title,
-                        "label": "positive" if label == 1 else "negative",
+                        "text": text,
+                        "label": label,
                         "source": f"scrape:{url}",
                         "collected_at": datetime.now().isoformat()
                     })
 
-                # следующая страница
+                # следующая страница (books.toscrape pagination)
                 next_btn = soup.select_one("li.next a")
-                if next_btn and page < pages:
+                if next_btn and page < pages and not text_selector:
                     base = url.rstrip("/")
                     current_url = base + "/catalogue/" + next_btn["href"]
                 else:
@@ -147,13 +168,16 @@ class DataCollectionAgent:
                     split=src.get("split", "train"),
                     sample=src.get("sample"),
                     label_map=src.get("label_map"),
-                    text_col=src.get("text_col")
+                    text_col=src.get("text_col"),
+                    config_name=src.get("config_name")
                 )
             elif src_type == "scrape":
                 df = self.scrape(
                     url=src["url"],
                     selector=src["selector"],
-                    pages=src.get("pages", 1)
+                    pages=src.get("pages", 1),
+                    text_selector=src.get("text_selector"),
+                    fixed_label=src.get("fixed_label")
                 )
             elif src_type == "api":
                 df = self.fetch_api(

@@ -1,91 +1,134 @@
-# Спецификация разметки — sentiment_classification
+# Спецификация разметки — news headline classification
 
-*Сгенерировано: 2026-03-26 15:00*
+*Сгенерировано: 2026-03-27 17:57*
 
-# Спецификация разметки: Классификация тональности текстов (Sentiment Classification)
+# Спецификация разметки: News Headline Classification
 
 ## 1. Описание задачи
 
-Задача заключается в определении эмоциональной окраски (тональности) текстовых рецензий на фильмы. Разметчик должен отнести каждый текст к одному из трёх классов: позитивная, негативная или нейтральная тональность.
+**Цель:** Классифицировать заголовки новостей на две категории — позитивные и негативные — на основе тональности и семантического содержания заголовка и первых строк статьи.
 
-**Целевое применение:** классификация отзывов пользователей для рекомендательных систем, анализа репутации контента, агрегации оценок.
+**Область применения:** Финансовые новости, деловые новости, спортивные новости.
 
-**Язык текстов:** преимущественно английский с возможными опечатками и HTML-сущностями.
-
----
-
-## 2. Определения классов
-
-### POSITIVE (Позитивная тональность)
-
-**Определение:** Текст выражает похвалу, одобрение и положительное отношение к фильму. Автор рецензии рекомендует фильм или считает его достойным внимания.
-
-**Ключевые маркеры:**
-- Слова одобрения: "favorite", "stunning", "brilliant", "amazing", "excellent", "worthy"
-- Рекомендации: "worth watching", "must see", "highly recommend"
-- Позитивные описания фильма как целого
-- Высокая оценка актёрской игры, режиссуры, сценария
-- Эмоции восхищения и удовлетворения
-
-**Примеры:**
-
-1. *"I dug out from my garage some old musicals and this is another one of my favorites. It was written by Jay Alan Lerner and directed by Vincent Minelli. It won two Academy Awards for Best Picture of 195"*
-   - Маркеры: "one of my favorites", упоминание Academy Awards, ностальгический тон
-
-2. *"'The Luzhin Defence' is a movie worthy of anyone's time. it is a brooding, intense film, and kept my attention the entire time. John Turturro is absolutely stunning in his portrayal of a tender, eccen"*
-   - Маркеры: "worthy of anyone's time", "stunning", "kept my attention"
-
-3. *"Just like Al Gore shook us up with his painfully honest and cleverly presented documentary-movie "An inconvenient truth", directors Alastair Fothergill and Mark Linfield also remind us that it's about"*
-   - Маркеры: "cleverly presented", сравнение с успешным фильмом, позитивные прилагательные
+**Назначение:** Автоматическое определение тональности новостного контента для аналитических систем и фильтрации информационных потоков.
 
 ---
 
-### NEGATIVE (Негативная тональность)
+## 2. Определение классов
 
-**Определение:** Текст содержит критику, неодобрение и отрицательное отношение к фильму. Автор выражает разочарование, скуку или несогласие с качеством кинопроизведения.
+### POSITIVE (Позитивный класс)
+Заголовки, описывающие благоприятные события, улучшение ситуации, достижения, успехи, рост показателей, прибыль, победы и позитивные новости в целом.
 
-**Ключевые маркеры:**
-- Слова критики: "dumb", "uninteresting", "uninspired", "disappointed", "boring", "terrible", "waste"
-- Явное выражение разочарования: "disappointed", "let down", "regret"
-- Критика аспектов: "bad acting", "poor directing", "weak plot"
-- Отрицательные сравнения
-- Рекомендация НЕ смотреть
+**Ключевые признаки:**
+- Рост финансовых показателей (earnings, revenue, profit increase)
+- Спортивные достижения и победы
+- Успешные инициативы и проекты
+- Позитивные тренды в бизнесе
+- Лидирующие позиции
 
-**Примеры:**
+### NEGATIVE (Негативный класс)
+Заголовки, описывающие неблагоприятные события, убытки, падение показателей, конфликты, загрязнение, снижение цен, критику, проблемы и негативные явления.
 
-1. *"Dumb is as dumb does, in this thoroughly uninteresting, supposed black comedy. Essentially what starts out as Chris Klein trying to maintain a low profile, eventually morphs into an uninspired version"*
-   - Маркеры: "Dumb", "thoroughly uninteresting", "uninspired"
-
-2. *"After watching this movie I was honestly disappointed - not because of the actors, story or directing - I was disappointed by this film advertisements.<br /><br />The trailers were suggesting that the"*
-   - Маркеры: "honestly disappointed" (повторено), критика маркетинга
-
-3. *"This movie was nominated for best picture but lost out to Casablanca but Paul Lukas beat out Humphrey Bogart for best actor. I don't see why Lucile Watson was nominated for best supporting actor, i ju"*
-   - Маркеры: сравнение не в пользу (проиграло), сомнение в обоснованности номинаций
-
----
-
-### NEUTRAL (Нейтральная тональность)
-
-**Определение:** Текст содержит преимущественно фактическую информацию о фильме (сюжет, актёры, года создания) без явного выражения положительных или отрицательных оценок. Автор описывает, но не судит.
-
-**Ключевые маркеры:**
-- Преобладание фактической информации (режиссер, актеры, год выпуска)
-- Описание сюжета без оценок
-- Сбалансированное изложение достоинств и недостатков
-- Отсутствие оценочных прилагательных
-- Информационный стиль
-
-**Примеры:**
-
-1. *"This film was directed by Martin Scorsese and stars Leonardo DiCaprio. The movie was released in 2013 and has a runtime of 180 minutes"*
-   - Маркеры: только фактические данные
-
-2. *"The main character is played by an experienced actor. The film combines elements of drama and thriller. It was nominated for several awards but did not win"*
-   - Маркеры: описание без оценки
-
-3. *"Based on the novel by Jane Austen, the film features Emma Thompson as the lead. Cinematography was handled by John Williams, and the score was composed by Patrick Doyle"*
-   - Маркеры: фактическая информация о составе
+**Ключевые признаки:**
+- Убытки, снижение прибыли
+- Конфликты, возмущение, гнев
+- Загрязнение и экологические проблемы
+- Падение цен и показателей
+- Критика и обвинения
 
 ---
 
-## 3. Граничные случаи (Edge Cases
+## 3. Примеры классификации
+
+### POSITIVE примеры
+
+**Пример 1:**
+```
+Заголовок: Motorola Third-Quarter Earnings Rise
+Контекст: Motorola Inc. отчиталась об увеличении квартальной прибыли
+Причина классификации: Growth, earnings rise — явный позитивный сигнал
+Класс: POSITIVE ✓
+```
+
+**Пример 2:**
+```
+Заголовок: Kite clings to lead at Schwab Cup Championship
+Контекст: Tom Kite лидирует после двух раундов чемпионата
+Причина классификации: Спортивное достижение, лидирующая позиция
+Класс: POSITIVE ✓
+```
+
+**Пример 3:**
+```
+Заголовок: Intel Takes Aim at Microsoft with Linux Push
+Контекст: Intel активно продвигает Linux в Китае и странах Азии
+Причина классификации: Успешная стратегическая инициатива компании
+Класс: POSITIVE ✓
+```
+
+**Пример 4:**
+```
+Заголовок: Apple Announces Record Quarterly Revenue
+Контекст: Apple сообщила о рекордной квартальной выручке
+Причина классификации: Очевидный рост показателей (record, revenue)
+Класс: POSITIVE ✓
+```
+
+---
+
+### NEGATIVE примеры
+
+**Пример 1:**
+```
+Заголовок: U.S. Furious at Proposal That Hamm Return His Gold
+Контекст: Американские олимпийские чиновники возмущены предложением
+Причина классификации: Гнев, конфликт, негативная эмоция (Furious)
+Класс: NEGATIVE ✓
+```
+
+**Пример 2:**
+```
+Заголовок: I.B.M. Offers $10,000 to Owners of Contaminated Houses
+Контекст: IBM готова платить за загрязненные дома в штате
+Причина классификации: Загрязнение, экологическая проблема, компенсация убытков
+Класс: NEGATIVE ✓
+```
+
+**Пример 3:**
+```
+Заголовок: Oil prices decline sharply
+Контекст: Цены на нефть упали после краткого роста до $54/барр., проблемы с предложением
+Причина классификации: Падение цен (decline), беспокойство о рынке (concerns)
+Класс: NEGATIVE ✓
+```
+
+**Пример 4:**
+```
+Заголовок: Bank Faces Major Lawsuit Over Fraudulent Practices
+Контекст: Крупный банк привлечен к ответственности за мошеннические действия
+Причина классификации: Судебный иск, обвинение, репутационный ущерб
+Класс: NEGATIVE ✓
+```
+
+---
+
+## 4. Граничные случаи
+
+### Случай 1: Нейтральная информация с потенциалом интерпретации
+
+```
+Заголовок: "Microsoft Announces Restructuring Plan"
+Контекст: Компания объявляет о реструктуризации, без деталей о причинах
+
+Сложность: Неясно, вызвана ли реструктуризация оптимизацией (позитив) 
+           или кризисом (негатив)
+
+Решение: Смотрим на контекст. Если упоминаются проблемы/убытки → NEGATIVE
+         Если упоминается эффективность/стратегия → POSITIVE
+         Если полностью нейтрально → В сомнениях выбираем NEGATIVE (консервативно)
+```
+
+### Случай 2: Смешанный контент
+
+```
+Заголовок: "Tesla
