@@ -5,10 +5,10 @@
 Шаги:
 1. Сбор данных      — DataCollectionAgent
 2. Чистка данных    — DataQualityAgent
-3. Авторазметка     — AnnotationAgent
+3. Авторазметка     — AnnotationAgent (выборка)
 4. ❗ HITL          — человек проверяет review_queue.csv
-5. AL отбор         — ActiveLearningAgent
-6. Обучение модели  — финальная модель
+5. AL + обучение    — ActiveLearningAgent → финальная модель
+6. Финальный датасет — модель размечает ВЕСЬ датасет
 7. Отчёт            — метрики всех этапов
 """
 
@@ -18,7 +18,9 @@ import pandas as pd
 import joblib
 from datetime import datetime
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+_ROOT = os.path.dirname(os.path.abspath(__file__))
+os.chdir(_ROOT)  # всегда запускаем из корня проекта
+sys.path.insert(0, _ROOT)
 
 from agents.data_collection_agent import DataCollectionAgent
 from agents.data_quality_agent import DataQualityAgent
@@ -70,6 +72,8 @@ def step2_clean(df):
         f.write(f"## После чистки\n- Записей: {len(df_clean)}\n\n")
         f.write(f"## Сравнение до/после\n```\n{comparison.to_string(index=False)}\n```\n")
 
+    df_clean.to_parquet(os.path.join(_ROOT, "data", "raw", "collected_clean.parquet"), index=False)
+    df_clean.to_csv(os.path.join(_ROOT, "data", "raw", "collected_clean.csv"), index=False)
     print(f"  После чистки: {len(df_clean)} записей")
     print(f"  Отчёт: reports/quality_report.md")
     return df_clean
@@ -79,17 +83,17 @@ def step2_clean(df):
 def step3_annotate(df):
     log(3, "Авторазметка — AnnotationAgent")
 
-    # Если данные уже размечены — используем их
+    sample_size = max(300, min(1000, len(df) // 5))
+    df_sample = df.sample(n=sample_size, random_state=42)
+    print(f"  Размечаем выборку: {sample_size} из {len(df)} записей (20%, min=100, max=1000)")
+
+    agent = AnnotationAgent(modality="text", confidence_threshold=0.7)
+    df_labeled = agent.auto_label(df_sample)
+    agent.generate_spec(df_labeled, task="classification")
+
     labeled_path = "data/labeled/collected_labeled.parquet"
-    if os.path.exists(labeled_path):
-        df_labeled = pd.read_parquet(labeled_path)
-        print(f"  Используем уже размеченные данные: {len(df_labeled)} записей")
-        print(f"  (чтобы перезапустить разметку — удали {labeled_path})")
-    else:
-        agent = AnnotationAgent(modality="text", confidence_threshold=0.7)
-        df_labeled = agent.auto_label(df)
-        agent.generate_spec(df_labeled, task="sentiment_classification")
-        df_labeled.to_parquet(labeled_path, index=False)
+    df_labeled.to_parquet(labeled_path, index=False)
+    df_labeled.to_csv(labeled_path.replace(".parquet", ".csv"), index=False)
 
     metrics = {
         "total": len(df_labeled),
@@ -144,6 +148,7 @@ def step4_human_review(df_labeled):
     df_reviewed["label"] = df_reviewed["auto_label"]
     df_reviewed = df_reviewed[df_reviewed["label"].isin(["positive", "negative"])]
     df_reviewed.to_parquet("data/labeled/reviewed.parquet", index=False)
+    df_reviewed.to_csv("data/labeled/reviewed.csv", index=False)
     print(f"  Итого после проверки: {len(df_reviewed)} записей")
     return df_reviewed
 
@@ -173,7 +178,8 @@ def step5_train(df_reviewed):
     final_metrics = history[-1]
 
     # Сохраняем отчёт
-    with open("reports/al_report.md", "w") as f:
+    os.makedirs(os.path.join(_ROOT, "reports"), exist_ok=True)
+    with open(os.path.join(_ROOT, "reports", "al_report.md"), "w") as f:
         f.write("# Active Learning Report\n\n")
         f.write(f"*Сгенерировано: {datetime.now().strftime('%Y-%m-%d %H:%M')}*\n\n")
         f.write(f"## Конфигурация\n")
@@ -188,16 +194,52 @@ def step5_train(df_reviewed):
         f.write(f"- F1: {final_metrics['f1']}\n")
 
     # Сохраняем модель
-    joblib.dump(agent.model, "models/final_model.pkl")
-    joblib.dump(agent.vectorizer, "models/vectorizer.pkl")
+    os.makedirs(os.path.join(_ROOT, "models"), exist_ok=True)
+    joblib.dump(agent.model, os.path.join(_ROOT, "models", "final_model.pkl"))
+    joblib.dump(agent.vectorizer, os.path.join(_ROOT, "models", "vectorizer.pkl"))
 
     print(f"  Финальные метрики: accuracy={final_metrics['accuracy']}, F1={final_metrics['f1']}")
     print(f"  Модель сохранена: models/final_model.pkl")
-    return final_metrics, history
+    return final_metrics, history, agent
 
 
-# ── Шаг 6: Итоговый отчёт ───────────────────────────────────
-def step6_report(metrics_per_step):
+# ── Шаг 6: Финальный датасет ────────────────────────────────
+def step6_predict_all(df_clean, df_reviewed):
+    log(6, "Финальный датасет — модель размечает весь датасет")
+
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.linear_model import LogisticRegression
+
+    # Векторайзер обучается на ВСЕХ текстах — знает всю лексику датасета
+    vectorizer = TfidfVectorizer(max_features=5000, ngram_range=(1, 2))
+    vectorizer.fit(df_clean["text"].astype(str))
+
+    # Модель обучается на размеченных данных (после HITL)
+    X_train = vectorizer.transform(df_reviewed["text"].astype(str))
+    model = LogisticRegression(max_iter=1000, random_state=42)
+    model.fit(X_train, df_reviewed["label"])
+
+    # Предсказываем на всём датасете
+    X_all = vectorizer.transform(df_clean["text"].astype(str))
+    preds = model.predict(X_all)
+    proba = model.predict_proba(X_all).max(axis=1)
+
+    df_final = df_clean.copy()
+    df_final["predicted_label"] = preds
+    df_final["model_confidence"] = proba.round(3)
+
+    os.makedirs(os.path.join(_ROOT, "data", "labeled"), exist_ok=True)
+    df_final.to_parquet(os.path.join(_ROOT, "data", "labeled", "final_dataset.parquet"), index=False)
+    df_final.to_csv(os.path.join(_ROOT, "data", "labeled", "final_dataset.csv"), index=False)
+
+    print(f"  Размечено моделью: {len(df_final)} записей")
+    print(f"  Распределение: {dict(df_final['predicted_label'].value_counts())}")
+    print(f"  Сохранено: data/labeled/final_dataset.csv")
+    return df_final
+
+
+# ── Шаг 7: Итоговый отчёт ───────────────────────────────────
+def step7_report(metrics_per_step):
     log(6, "Итоговый отчёт")
 
     print("\n" + BANNER)
@@ -237,11 +279,15 @@ if __name__ == "__main__":
     metrics["Шаг 4 (HITL)"] = f"{len(df_reviewed)} записей после проверки"
 
     # Шаг 5
-    final_metrics, history = step5_train(df_reviewed)
+    final_metrics, history, agent = step5_train(df_reviewed)
     metrics["Шаг 5 (Обучение)"] = f"accuracy={final_metrics['accuracy']}, F1={final_metrics['f1']}"
 
     # Шаг 6
-    step6_report(metrics)
+    df_final = step6_predict_all(df_clean, df_reviewed)
+    metrics["Шаг 6 (Финальный датасет)"] = f"{len(df_final)} записей → data/labeled/final_dataset.csv"
+
+    # Шаг 7
+    step7_report(metrics)
 
     print(f"\n{BANNER}")
     print("  ПАЙПЛАЙН ЗАВЕРШЁН УСПЕШНО ✓")

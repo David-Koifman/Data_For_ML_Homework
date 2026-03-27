@@ -1,36 +1,73 @@
 text,label,source,collected_at,auto_label,confidence
-"Johnson rides into  #39;playoffs #39; with hype, skill on his side It might make the racing crowd cringe, but what NASCAR boss Brian France is doing to manufacture excitement at a time of the year when racing usually hits a lull and sports fans ",negative,hf:ag_news,2026-03-27T17:55:32.854297,positive,0.65
-"Hurst #39;s black mark for Beckham They symbolise two very different eras of English football, and yesterday the philosophies of David Beckham and Sir Geoff Hurst clashed in spectacular fashion when the ",negative,hf:ag_news,2026-03-27T17:55:32.854297,negative,0.68
-"Boosters Say They Understand Spurrier #39;s Decision TAMPA - Since his name first surfaced as a possible replacement for Ron Zook, former Florida football coach Steve Spurrier has been the focal point of a Gator Nation desperately seeking a return to glory.",negative,hf:ag_news,2026-03-27T17:55:32.854297,positive,0.68
-Revived Wizards remain on a roll One of the longest-running curiosities in sports is why fans in Atlanta don #39;t come out to professional sports events. And many fans who showed up at Philips Arena last night ,negative,hf:ag_news,2026-03-27T17:55:32.854297,positive,0.65
-"Dutch Minister's World Revealed in 'Blog' (Reuters) Reuters - Dutch Finance Minister Gerrit Zalm\says his ""blog"" -- personal diary on the Internet -- gives\people an idea of what it is to be a minister, with insights\into his professional and private life.",positive,hf:ag_news,2026-03-27T17:55:32.854297,positive,0.6
-"US space agency chief resigns The head of the US space agency (Nasa), Sean O'Keefe, resigns after three years in the post.",positive,hf:ag_news,2026-03-27T17:55:32.854297,negative,0.6
-"Bush   Kerry Battle It Out In Search Bush  #038; Kerry Battle It Out In Search\\So if it was up to the search engines to decide who would win the Presidential election, would you agree? Found an interesting press release today that I thought could provide some insight into how our favorite candidates are doing in the search ...",positive,hf:ag_news,2026-03-27T17:55:32.854297,negative,0.55
-"IOC warns against venue delays Beijing should not wait too long to complete venues for the 2008 Olympics, a top official from the International Olympic Committee said in the capital yesterday.",negative,hf:ag_news,2026-03-27T17:55:32.854297,negative,0.65
-Microsoft placates two foes Editor #39;s Summary: Microsoft announced that it paid an undisclosed amount to the CCIA trade group so that it won #39;t challenge the software maker #39;s US antitrust settlement or participate in a European Union antitrust case.,negative,hf:ag_news,2026-03-27T17:55:32.854297,negative,0.65
-"'Unit' Deal Unresolved The Yankees, Diamondbacks and Dodgers are still working to complete a deal that would put Randy Johnson in pinstripes, send Shawn Green to Arizona and land Javy Vazquez in Los Angeles.",negative,hf:ag_news,2026-03-27T17:55:32.854297,negative,0.6
-"Yushchenko seeks confidence vote Opposition leader Viktor Yushchenko pursues a vote in parliament, as the crisis in Ukraine continues.",negative,hf:ag_news,2026-03-27T17:55:32.854297,negative,0.65
-Palestinians won #39;t bring anti-Israel draft to General Assembly The Palestinians have decided not to bring a draft resolution condemning Israel #39;s military operation in the northern Gaza ,negative,hf:ag_news,2026-03-27T17:55:32.854297,negative,0.65
-Packers Activate Cornerback McKenzie (AP) AP - The Green Bay Packers activated cornerback Mike McKenzie and waived tight end Sean McHugh on Saturday.,negative,hf:ag_news,2026-03-27T17:55:32.854297,positive,0.6
-"Report: Airbus Aims to Trump Boeing's 7E7  PARIS (Reuters) - Airbus is designing an aircraft to  compete with Boeing Co.'s planned 7E7 wide-body jetliner that  would carry more passengers and fly further than the U.S.  plane, the Wall Street Journal reported on Tuesday, citing  people familiar with the plans.",negative,hf:ag_news,2026-03-27T17:55:32.854297,positive,0.65
-"Yank Heavy Hitter Sheffield Fan Favorite (AP) AP - Gary Sheffield emerged from the trainer's room after games, his left shoulder wrapped in bandages that resembled football pads. Most days, one or two fingers were taped, too.",negative,hf:ag_news,2026-03-27T17:55:32.854297,negative,0.6
-"Iraq Awards First Post-War Oilfield Contracts  BAGHDAD (Reuters) - Iraq's oil ministry has awarded the  country's first post-war oilfield development contracts to  Turkish and Canadian firms, an oil official said on Thursday.",negative,hf:ag_news,2026-03-27T17:55:32.854297,positive,0.65
-"Dollar Dips Ahead of Greenspan, Jobs Data  NEW YORK (Reuters) - The dollar slipped on Thursday as  traders adjusted positions to neutral levels ahead of Friday's  key U.S. payrolls report but some analysts think the currency  is poised to rally against the euro.",negative,hf:ag_news,2026-03-27T17:55:32.854297,positive,0.6
-Stocks Are Set to Open Slightly Higher NEW YORK - U.S. stocks are seen slightly higher at the open but a swathe of economic data is likely to influence overall sentiment and direction...,negative,hf:ag_news,2026-03-27T17:55:32.854297,positive,0.65
-"Turkey Must Increase Kurds #39; Rights -Verheugen Turkey must go further in improving its Kurdish minority #39;s cultural rights, EU Enlargement Commissioner Guenter Verheugen said on Tuesday.",negative,hf:ag_news,2026-03-27T17:55:32.854297,negative,0.68
-"Florida Week Always Brings Excitement (AP) AP - As a freshman from Mississippi, defensive end Parys Haralson didn't know much about Tennessee's rivalry with Florida.",negative,hf:ag_news,2026-03-27T17:55:32.854297,positive,0.65
-"Ballmer: Microsoft Courting Linux Users, Longhorn Worth Wait Microsoft CEO Steve Ballmer has made courting Linux users and those considering the open-source option a top priority and said the sheer volume of innovation that Longhorn development efforts ",positive,hf:ag_news,2026-03-27T17:55:32.854297,positive,0.65
-Air Force Looks at New Microwave Weapon (AP) AP - The Air Force expects planes will be able to fire non-lethal microwave rays at enemy ground troops with the help of a new superconducting generator system developed at Wright-Patterson Air Force Base after about 25 years of research.,positive,hf:ag_news,2026-03-27T17:55:32.854297,neutral,0.55
-"Turkey urged to recognise Cyprus The European commission president, Jose Manuel Barroso, today urged Ankara to  quot;go the extra mile quot; - including the recognition of Cyprus - to convince sceptics Turkey is ready to become a candidate for EU membership.",negative,hf:ag_news,2026-03-27T17:55:32.854297,positive,0.68
-"Spitzer mentor takes over at Marsh A FORMER mentor to Eliot Spitzer replaced Jeffrey Greenberg as chief executive of Marsh  amp; McLennan last night, as the embattled insurance group made its first move towards settling a lawsuit with the New York Attorney-General.",negative,hf:ag_news,2026-03-27T17:55:32.854297,neutral,0.58
-"S. Africa Condemns Claims About Aristide S. African Government Condemns Accusations That It Is Being Used As Springboard for Haiti #39;s Aristide. A boy passes a car that says  quot;Aristide King quot; in the pro-Aristide slum of Bel-Air in Port-au-Prince, Sunday, Oct. 17, 2004.",negative,hf:ag_news,2026-03-27T17:55:32.854297,negative,0.65
-Australian voters head to polls Australians voted today in an election which offered the choice between a conservative government that unreservedly backs the United States and its Iraq war and a Labour opposition seeking stronger ties in Asia.,negative,hf:ag_news,2026-03-27T17:55:32.854297,neutral,0.55
-Botswana elections to hand victory to party in power since &lt;b&gt;...&lt;/b&gt; GABORONE (AFP) - Queues of voters in diamond-rich Botswana waited patiently to cast their ballots in elections that are expected to hand victory to the party in power since independence in 1966 in one of Africa #39;s most stable countries.,negative,hf:ag_news,2026-03-27T17:55:32.854297,neutral,0.55
-"The  #39;Chase #39; brings new drama to NASCAR Saturday #39;s Chevy Rock  amp; Roll 400 at RIR was the season #39;s 26th event, the last chance for drivers to qualify for the 10-race Chase, NASCAR #39;s version of team-sport playoffs.",negative,hf:ag_news,2026-03-27T17:55:32.854297,positive,0.6
-Q A: Cognos CEO calls business intelligence ROI a 'fuzzy' metric Cognos CEO Rob Ashe says companies are demanding a more tangible means of measuring the return on their business intelligence investment.,positive,hf:ag_news,2026-03-27T17:55:32.854297,neutral,0.55
-Transactions BASEBALL Florida (NL): Released Ps Billy Koch and Aaron Small and C Ramon Castro; added INFs Joe Dillon and Derek Wathan to roster.,negative,hf:ag_news,2026-03-27T17:55:32.854297,neutral,0.55
-19-year veteran slated to get bulk of action in 2005 com. The Pittsburgh Pirates acquired veteran catcher Benito Santiago on Thursday from the Kansas City Royals in exchange for minor league right-hander Leo Nunez.,negative,hf:ag_news,2026-03-27T17:55:32.854297,neutral,0.58
-"Yahoo, Earthlink Build Bulwark Against Spoofing There are several technologies similar to DomainKeys, including Cisco #39;s Identified Internet Mail and Microsofts #39;s SenderID.",positive,hf:ag_news,2026-03-27T17:55:32.854297,positive,0.68
-"Asian Shares End Mixed; Tokyo Advances, Hong Kong Falls Asian stocks finished mixed Wednesday, with Tokyo shares advancing on a positive economic outlook but markets in Hong Kong and elsewhere falling on worries about record-high oil prices.",negative,hf:ag_news,2026-03-27T17:55:32.854297,neutral,0.6
-"After 68 weeks, inflation returns to HK HONG KONG, AUGUST 25 : After years of steadily falling prices that dragged down salaries and destroyed the value of many apartments, inflation has finally returned here, government statisticians announced early this week.",negative,hf:ag_news,2026-03-27T17:55:32.854297,positive,0.68
-"Sanctions suspended, not lifted Tucked into that \$136 billion in corporate tax breaks President Bush just signed was the point of the bill: Lifting a \$5 billion annual export subsidy the World Trade Organization had ruled illegal.",negative,hf:ag_news,2026-03-27T17:55:32.854297,negative,0.65
+"Wat time liao, where still got.
+",negative,hf:sms_spam,2026-03-28T03:13:21.908305,negative,0.68
+"Nothing. Can...
+",negative,hf:sms_spam,2026-03-28T03:13:21.908305,negative,0.55
+"Like a personal sized or what
+",negative,hf:sms_spam,2026-03-28T03:13:21.908305,negative,0.6
+"I'm gonna rip out my uterus.
+",negative,hf:sms_spam,2026-03-28T03:13:21.908305,negative,0.65
+"Your pussy is perfect!
+",negative,hf:sms_spam,2026-03-28T03:13:21.908305,negative,0.62
+"No de.am seeing in online shop so that i asked.
+",negative,hf:sms_spam,2026-03-28T03:13:21.908305,negative,0.58
+"Yeah imma come over cause jay wants to do some drugs
+",negative,hf:sms_spam,2026-03-28T03:13:21.908305,negative,0.68
+"Ü come lt 25 n pass to me lar
+",negative,hf:sms_spam,2026-03-28T03:13:21.908305,negative,0.58
+"I dont know what to do to come out of this so only am ask questions like this dont mistake me.
+",negative,hf:sms_spam,2026-03-28T03:13:21.908305,negative,0.62
+"Yes:)here tv is always available in work place..
+",negative,hf:sms_spam,2026-03-28T03:13:21.908305,negative,0.68
+"Kallis wont bat in 2nd innings.
+",negative,hf:sms_spam,2026-03-28T03:13:21.908305,negative,0.65
+"Then why no one talking to me
+",negative,hf:sms_spam,2026-03-28T03:13:21.908305,negative,0.61
+"S now only i took tablets . Reaction morning only.
+",negative,hf:sms_spam,2026-03-28T03:13:21.908305,negative,0.59
+"WHO ARE YOU SEEING?
+",negative,hf:sms_spam,2026-03-28T03:13:21.908305,negative,0.64
+"Just sent it. So what type of food do you like?
+",negative,hf:sms_spam,2026-03-28T03:13:21.908305,negative,0.69
+"Come round, it's . 
+",negative,hf:sms_spam,2026-03-28T03:13:21.908305,negative,0.6
+"Rose needs water, season needs change, poet needs imagination..My phone needs ur sms and i need ur lovely frndship forever....
+",negative,hf:sms_spam,2026-03-28T03:13:21.908305,negative,0.68
+"Same to u...
+",negative,hf:sms_spam,2026-03-28T03:13:21.908305,negative,0.55
+"Ü all write or wat..
+",negative,hf:sms_spam,2026-03-28T03:13:21.908305,negative,0.58
+"&lt;#&gt; , that's all? Guess that's easy enough
+",negative,hf:sms_spam,2026-03-28T03:13:21.908305,negative,0.65
+"I have gone into get info bt dont know what to do
+",negative,hf:sms_spam,2026-03-28T03:13:21.908305,negative,0.68
+"Many times we lose our best ones bcoz we are 
+",negative,hf:sms_spam,2026-03-28T03:13:21.908305,negative,0.6
+"Dear we got  &lt;#&gt;  dollars hi hi
+",negative,hf:sms_spam,2026-03-28T03:13:21.908305,negative,0.65
+"Oh just getting even with u.... u?
+",negative,hf:sms_spam,2026-03-28T03:13:21.908305,negative,0.58
+"Dear where you will be when i reach there
+",negative,hf:sms_spam,2026-03-28T03:13:21.908305,negative,0.68
+"on a Tuesday night r u 4 real
+",negative,hf:sms_spam,2026-03-28T03:13:21.908305,negative,0.58
+"Sorry light turned green, I meant another friend wanted  &lt;#&gt;  worth but he may not be around
+",negative,hf:sms_spam,2026-03-28T03:13:21.908305,negative,0.65
+"Ok can...
+",negative,hf:sms_spam,2026-03-28T03:13:21.908305,negative,0.52
+"I wake up long ago already... Dunno, what other thing?
+",negative,hf:sms_spam,2026-03-28T03:13:21.908305,negative,0.64
+"Audrie lousy autocorrect
+",negative,hf:sms_spam,2026-03-28T03:13:21.908305,negative,0.62
+"I accidentally brought em home in the box
+",negative,hf:sms_spam,2026-03-28T03:13:21.908305,negative,0.68
+"Id onluy matters when getting on from offcampus
+",negative,hf:sms_spam,2026-03-28T03:13:21.908305,negative,0.58
+"This pain couldn't have come at a worse time.
+",negative,hf:sms_spam,2026-03-28T03:13:21.908305,negative,0.65
+"Or ü go buy wif him then i meet ü later can?
+",negative,hf:sms_spam,2026-03-28T03:13:21.908305,negative,0.62
+"Morning only i can ok.
+",negative,hf:sms_spam,2026-03-28T03:13:21.908305,negative,0.55
+"The  &lt;#&gt; g that i saw a few days ago, the guy wants sell wifi only for  &lt;#&gt;  and with 3g for  &lt;#&gt; . That's why i blanked him.
+",negative,hf:sms_spam,2026-03-28T03:13:21.908305,negative,0.68

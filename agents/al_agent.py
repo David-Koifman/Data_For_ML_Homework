@@ -99,7 +99,7 @@ class ActiveLearningAgent:
         plt.tight_layout()
         os.makedirs(os.path.join(_ROOT, "reports"), exist_ok=True)
         plt.savefig(os.path.join(_ROOT, "reports", "learning_curve.png"), dpi=150)
-        plt.show()
+        plt.close()
         print("Сохранено: reports/learning_curve.png")
 
     # ── run_cycle ────────────────────────────────────────────────────────────

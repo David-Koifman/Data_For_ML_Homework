@@ -190,4 +190,5 @@ if __name__ == "__main__":
 
     # Сохраняем
     df_clean.to_parquet(os.path.join(_ROOT, "data", "raw", "collected_clean.parquet"), index=False)
-    print("\nСохранено: data/raw/collected_clean.parquet")
+    df_clean.to_csv(os.path.join(_ROOT, "data", "raw", "collected_clean.csv"), index=False)
+    print("\nСохранено: data/raw/collected_clean.parquet + collected_clean.csv")

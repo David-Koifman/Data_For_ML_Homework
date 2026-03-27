@@ -1,19 +1,18 @@
-task: "классификация новостных заголовков (tech vs non-tech)"
+task: "классификация спам-сообщений (spam=positive, ham=negative)"
 
 sources:
   - type: hf_dataset
-    name: ag_news
+    name: sms_spam
     split: train
     sample: 1500
+    text_col: sms
     label_map:
-      0: "negative"   # World
-      1: "negative"   # Sports
-      2: "negative"   # Business
-      3: "positive"   # Sci/Tech
+      0: "negative"   # ham (нормальное сообщение)
+      1: "positive"   # spam
 
   - type: scrape
-    url: "https://news.ycombinator.com"
-    selector: ".athing"
-    text_selector: ".titleline > a"
-    fixed_label: "positive"
-    pages: 3
+    url: "https://quotes.toscrape.com"
+    selector: "div.quote"
+    text_selector: "span.text"
+    fixed_label: "negative"
+    pages: 10

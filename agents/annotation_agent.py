@@ -29,9 +29,19 @@ class AnnotationAgent:
         return self._client
 
     # ── skill: auto_label ────────────────────────────────────────────────────
-    def auto_label(self, df: pd.DataFrame, modality: str = None) -> pd.DataFrame:
+    def auto_label(self, df: pd.DataFrame, modality: str = None, task: str = None) -> pd.DataFrame:
         modality = modality or self.modality
+        # Читаем задачу из config.yaml если не передана явно
+        if task is None:
+            try:
+                import yaml
+                with open(os.path.join(_ROOT, "config.yaml")) as f:
+                    cfg = yaml.safe_load(f)
+                task = cfg.get("task", "бинарная классификация текста (positive/negative)")
+            except Exception:
+                task = "бинарная классификация текста (positive/negative)"
         print(f"[AnnotationAgent] Авторазметка {len(df)} записей (modality={modality})...")
+        print(f"[AnnotationAgent] Задача: {task}")
 
         if modality != "text":
             raise ValueError(f"Модальность '{modality}' не поддерживается. Используй 'text'.")
@@ -45,15 +55,33 @@ class AnnotationAgent:
             batch = df.iloc[i:i + batch_size]
             texts = batch["text"].tolist()
 
-            prompt = """Ты эксперт по разметке тональности текста.
-Для каждого текста определи тональность. Используй ТОЛЬКО два класса: positive или negative.
-Если текст нейтральный или неоднозначный — выбери наиболее подходящий из двух и укажи низкую уверенность (0.5-0.6).
-Ответь ТОЛЬКО в формате JSON списка, например:
-[{"label": "positive", "confidence": 0.95}, {"label": "negative", "confidence": 0.88}]
-Никакого другого текста, только JSON. Только классы positive или negative.
+            prompt = f"""Ты эксперт-разметчик данных для задачи машинного обучения.
 
-Тексты:
-""" + "\n---\n".join([f"{j+1}. {t[:300]}" for j, t in enumerate(texts)])
+ЗАДАЧА: {task}
+
+КЛАССЫ:
+- "positive" — текст явно относится к позитивному примеру задачи
+- "negative" — текст явно относится к негативному примеру задачи
+
+ПРАВИЛА УВЕРЕННОСТИ:
+- 0.95–1.00: однозначно, никаких сомнений
+- 0.80–0.94: скорее всего правильно, небольшие сомнения
+- 0.65–0.79: есть сомнения, но выбор обоснован
+- 0.50–0.64: очень неоднозначно, почти 50/50
+
+ГРАНИЧНЫЕ СЛУЧАИ — ставь низкую уверенность (0.50–0.65) если:
+- текст содержит признаки обоих классов
+- текст слишком короткий или невнятный
+- тема не связана с задачей напрямую
+- смешанный тон (и хвалит, и критикует)
+
+ФОРМАТ ОТВЕТА — строго JSON список, ровно {len(texts)} элементов, по одному на каждый текст:
+[{{"label": "positive", "confidence": 0.95}}, {{"label": "negative", "confidence": 0.72}}, ...]
+
+Никаких пояснений, никакого markdown, только JSON. Классы строго: "positive" или "negative".
+
+ТЕКСТЫ ДЛЯ РАЗМЕТКИ:
+""" + "\n---\n".join([f"[{j+1}] {t[:400]}" for j, t in enumerate(texts)])
 
             try:
                 response = client.messages.create(
@@ -232,4 +260,5 @@ if __name__ == "__main__":
     # Сохраняем
     os.makedirs(os.path.join(_ROOT, "data", "labeled"), exist_ok=True)
     df_labeled.to_parquet(os.path.join(_ROOT, "data", "labeled", "collected_labeled.parquet"), index=False)
-    print(f"\nСохранено: data/labeled/collected_labeled.parquet")
+    df_labeled.to_csv(os.path.join(_ROOT, "data", "labeled", "collected_labeled.csv"), index=False)
+    print(f"\nСохранено: data/labeled/collected_labeled.parquet + collected_labeled.csv")

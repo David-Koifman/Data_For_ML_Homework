@@ -8,6 +8,7 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
+from urllib.parse import urljoin
 import yaml
 
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -64,37 +65,72 @@ class DataCollectionAgent:
 
     # ── skill: scrape ────────────────────────────────────────────────────────
     def scrape(self, url: str, selector: str, pages: int = 1,
-               text_selector: str = None, fixed_label: str = None) -> pd.DataFrame:
+               text_selector: str = None, fixed_label: str = None,
+               label_from_class: str = None, label_map: dict = None,
+               page_param: str = None) -> pd.DataFrame:
         """
         Универсальный скрапер.
-        - text_selector: CSS-селектор текста внутри каждого item (если None — books.toscrape режим)
-        - fixed_label: фиксированная метка для всех записей (если None — books.toscrape режим)
+        - text_selector: CSS-селектор текста внутри каждого item
+        - fixed_label: фиксированная метка для всех записей
+        - label_from_class: префикс CSS-класса откуда брать метку (напр. "m-statement--")
+        - label_map: маппинг извлечённых меток → positive/negative
+        - page_param: параметр пагинации через URL (?page=N), если None — ищем li.next a
         """
         print(f"  [scrape] Скрапинг {url} ({pages} страниц)...")
         records = []
-        current_url = url
+        headers = {"User-Agent": "Mozilla/5.0"}
 
         for page in range(1, pages + 1):
+            # Строим URL страницы
+            if page_param:
+                current_url = f"{url}?{page_param}={page}" if page > 1 else url
+            else:
+                current_url = url
+
             try:
-                resp = requests.get(current_url, timeout=10)
+                resp = requests.get(current_url, timeout=10, headers=headers)
                 soup = BeautifulSoup(resp.text, "html.parser")
                 items = soup.select(selector)
 
+                if not items:
+                    break
+
                 for item in items:
+                    # Извлекаем текст
                     if text_selector:
-                        # Универсальный режим: text_selector + fixed_label
                         text_tag = item.select_one(text_selector)
                         if not text_tag:
                             continue
                         text = text_tag.get_text(strip=True)
-                        label = fixed_label or "positive"
                     else:
-                        # books.toscrape режим (обратная совместимость)
+                        # books.toscrape режим
                         title_tag = item.select_one("h3 a")
-                        rating_tag = item.select_one("p.star-rating")
-                        if not title_tag or not rating_tag:
+                        if not title_tag:
                             continue
                         text = title_tag.get("title", title_tag.text.strip())
+
+                    # Извлекаем метку
+                    if label_from_class:
+                        # Берём из CSS-класса: "m-statement--false" → "false"
+                        # Ищем класс чей суффикс есть в label_map
+                        classes = item.get("class", [])
+                        label = None
+                        for c in classes:
+                            if c.startswith(label_from_class) and c != label_from_class:
+                                raw_label = c.replace(label_from_class, "")
+                                mapped = (label_map or {}).get(raw_label)
+                                if mapped is not None:
+                                    label = mapped
+                                    break
+                        if label is None:
+                            continue  # не в маппинге — пропускаем
+                    elif fixed_label:
+                        label = fixed_label
+                    else:
+                        # books.toscrape режим
+                        rating_tag = item.select_one("p.star-rating")
+                        if not rating_tag:
+                            continue
                         rating_word = rating_tag.get("class", ["", ""])[1]
                         lbl = STAR_MAP.get(rating_word)
                         if lbl is None:
@@ -110,13 +146,15 @@ class DataCollectionAgent:
                         "collected_at": datetime.now().isoformat()
                     })
 
-                # следующая страница (books.toscrape pagination)
-                next_btn = soup.select_one("li.next a")
-                if next_btn and page < pages and not text_selector:
-                    base = url.rstrip("/")
-                    current_url = base + "/catalogue/" + next_btn["href"]
-                else:
-                    break
+                # Пагинация через li.next a (универсальный)
+                if not page_param:
+                    next_btn = soup.select_one("li.next a")
+                    if next_btn and page < pages:
+                        next_href = next_btn["href"]
+                        current_url = urljoin(current_url, next_href)
+                    else:
+                        break
+
             except Exception as e:
                 print(f"  [scrape] Ошибка на странице {page}: {e}")
                 break
@@ -177,7 +215,10 @@ class DataCollectionAgent:
                     selector=src["selector"],
                     pages=src.get("pages", 1),
                     text_selector=src.get("text_selector"),
-                    fixed_label=src.get("fixed_label")
+                    fixed_label=src.get("fixed_label"),
+                    label_from_class=src.get("label_from_class"),
+                    label_map=src.get("label_map"),
+                    page_param=src.get("page_param"),
                 )
             elif src_type == "api":
                 df = self.fetch_api(
